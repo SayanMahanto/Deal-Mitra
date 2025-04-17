@@ -16,6 +16,7 @@ function App() {
       <Route path="/filterpage" element={<FilterPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/searchpage" element={<SearchPage2 />} />
+      <Route path="/searchpagemain" element={<SearchPage />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/" element={<Login />} />
     </Routes>
