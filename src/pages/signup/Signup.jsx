@@ -67,6 +67,7 @@ function Signup() {
       console.log("User registered successfully:", { email, name });
       navigate("/login");
       setEmail("");
+      setPhone("");
       setPassword("");
       setConfirmPassword("");
       setName("");

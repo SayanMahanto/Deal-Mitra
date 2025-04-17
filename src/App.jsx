@@ -5,6 +5,7 @@ import {
   Login,
   Signup,
   SearchPage,
+  SearchPage2,
   FilterPage,
 } from "./pages/index.js";
 
@@ -14,7 +15,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/filterpage" element={<FilterPage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/searchpage" element={<SearchPage />} />
+      <Route path="/searchpage" element={<SearchPage2 />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/" element={<Login />} />
     </Routes>

@@ -51,7 +51,7 @@ function Login() {
       console.log("Logging in with:", { email, password });
       await account.createEmailPasswordSession(email, password);
       console.log("Login successful for:", { email });
-      navigate("/dashboard");
+      navigate("/searchPage");
       setEmail("");
       setPassword("");
     } catch (err) {
