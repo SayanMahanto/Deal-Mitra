@@ -1,11 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Client, Account } from "appwrite";
+import { Client, Account, ID } from "appwrite";
+import { Eye, EyeOff } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [error, setError] = useState("");
+  const [avatarSeed, setAvatarSeed] = useState("");
+  const [activeTab, setActiveTab] = useState("profileDetails");
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+
+  const [formData, setFormData] = useState({
+    email: "",
+    firstName: "",
+    lastName: "",
+    website: "",
+    facebook: "",
+    twitter: "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+  });
 
   const envVars = {
     VITE_APPWRITE_URL: import.meta.env.VITE_APPWRITE_URL,
@@ -17,8 +36,6 @@ const Dashboard = () => {
     client = new Client()
       .setEndpoint(envVars.VITE_APPWRITE_URL)
       .setProject(envVars.VITE_APPWRITE_PROJECT_ID);
-  } else {
-    console.error("Missing required environment variables:", envVars);
   }
 
   const account = client ? new Account(client) : null;
@@ -26,56 +43,182 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchUser = async () => {
       if (!account) return;
-
       try {
         const currentUser = await account.get();
         setUser(currentUser);
+
+        setFormData({
+          email: currentUser.email || "",
+          firstName: currentUser.name?.split(" ")[0] || "",
+          lastName: currentUser.name?.split(" ")[1] || "",
+          website: "https://profilepress.net",
+          facebook: "https://www.facebook.com/profilepress",
+          twitter: "https://twitter.com/profilepress",
+        });
+
+        const storedSeed = localStorage.getItem("avatarSeed");
+        const seed = storedSeed || Math.random().toString(36).substring(2, 10);
+        setAvatarSeed(seed);
+        if (!storedSeed) localStorage.setItem("avatarSeed", seed);
       } catch (err) {
         console.error("Error fetching user:", err);
-        setError("Failed to load user data. Please log in again.");
       }
     };
 
     fetchUser();
   }, []);
 
+  const handleInputChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handlePasswordChange = (e) => {
+    setPasswordData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   const handleLogout = async () => {
     if (!account) return;
     try {
-      console.log("Logout successful for user:", user.email);
       await account.deleteSession("current");
       navigate("/");
     } catch (err) {
       console.error("Logout error:", err);
-      alert("Failed to log out. Please try again.");
+      alert("Failed to log out.");
+    }
+  };
+
+  const handleProfileUpdate = (e) => {
+    e.preventDefault();
+    alert("Profile updated!");
+    console.log("Updated data:", formData);
+  };
+
+  const handleChangePassword = (e) => {
+    e.preventDefault();
+    alert("Password changed!");
+    console.log("Change Password:", passwordData);
+  };
+
+  const renderMainContent = () => {
+    if (activeTab === "profileDetails") {
+      return (
+        <div className="flex gap-10 flex-wrap">
+          {/* Left: Profile Details */}
+          <div className="w-full md:w-[350px] bg-white shadow-md p-6 rounded-xl">
+            <img
+              src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${avatarSeed}`}
+              alt="Avatar"
+              className="w-28 h-28 mx-auto rounded-full border-4 border-blue-500 mb-4"
+            />
+            <form onSubmit={handleProfileUpdate} className="space-y-4">
+              {["firstName", "lastName", "email", "website", "facebook", "twitter"].map((field) => (
+                <div key={field}>
+                  <label className="block font-medium capitalize mb-1">
+                    {field.replace(/([A-Z])/g, " $1")}
+                  </label>
+                  <input
+                    type={field === "email" ? "email" : "text"}
+                    name={field}
+                    value={formData[field]}
+                    onChange={handleInputChange}
+                    className="w-full border px-3 py-2 rounded"
+                  />
+                </div>
+              ))}
+              <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                Save
+              </button>
+            </form>
+          </div>
+
+          {/* Right: Account Actions */}
+          <div className="w-full md:flex-1 bg-white shadow-md p-6 rounded-xl">
+            <h2 className="text-xl font-bold mb-4">Account Settings</h2>
+
+            <button
+              onClick={() => setShowChangePassword(!showChangePassword)}
+              className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+            >
+              {showChangePassword ? "Hide Change Password" : "Change Password"}
+            </button>
+
+            {showChangePassword && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold mb-2">Change Password</h3>
+                <form onSubmit={handleChangePassword} className="space-y-4">
+                  <div className="relative">
+                    <label className="block font-medium mb-1">Old Password</label>
+                    <input
+                      type={showOldPassword ? "text" : "password"}
+                      name="oldPassword"
+                      value={passwordData.oldPassword}
+                      onChange={handlePasswordChange}
+                      className="w-full border px-3 py-2 rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowOldPassword(!showOldPassword)}
+                      className="absolute right-3 top-9"
+                    >
+                      {showOldPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <label className="block font-medium mb-1">New Password</label>
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      className="w-full border px-3 py-2 rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-9"
+                    >
+                      {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                    Change Password
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      );
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Dashboard</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <aside className="w-64 bg-white shadow-md p-6 flex flex-col">
+        <img
+          src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${avatarSeed}`}
+          alt="Avatar"
+          className="w-24 h-24 mx-auto rounded-full border-4 border-blue-500 mb-4"
+        />
+        <nav className="space-y-3">
+          <button
+            onClick={() => setActiveTab("profileDetails")}
+            className={`w-full text-left px-4 py-2 rounded ${activeTab === "profileDetails" ? "bg-blue-100 text-blue-600 font-semibold" : "hover:bg-gray-200 text-gray-700"}`}
+          >
+            My Dashboard
+          </button>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left px-4 py-2 rounded text-red-500 hover:bg-red-100"
+          >
+            Logout
+          </button>
+        </nav>
+      </aside>
 
-      {user ? (
-        <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-md text-center">
-          <p className="text-lg text-gray-700 mb-2">
-            <strong>Name:</strong> {user.name}
-          </p>
-          <p className="text-lg text-gray-700 mb-2">
-            <strong>Email:</strong> {user.email}
-          </p>
-          <div className="flex flex-col gap-4">
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      ) : (
-        <p className="text-gray-600">Loading user data...</p>
-      )}
+      {/* Main content */}
+      <main className="flex-1 p-10 bg-gray-50">{renderMainContent()}</main>
     </div>
   );
 };
