@@ -69,6 +69,11 @@ export default function SearchPage() {
     setSortByRating(e.target.value);
   };
 
+  const handleDashboard = (e) => {
+    e.preventDefault();
+    navigate("/dashboard");
+  };
+
   // Scrape handler (from SearchPage2)
   const handleScrape = async () => {
     setIsLoading(true);
@@ -215,7 +220,10 @@ export default function SearchPage() {
       {/* Top bar with title and user icon */}
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Search Page</h1>
-        <FaUserCircle className="text-3xl text-gray-700 cursor-pointer" />
+        <FaUserCircle
+          className="text-3xl text-gray-700 cursor-pointer"
+          onClick={handleDashboard}
+        />
       </div>
 
       {/* Error Message */}
