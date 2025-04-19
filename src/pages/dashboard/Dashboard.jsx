@@ -96,7 +96,7 @@ const Dashboard = () => {
   const handleChangePassword = (e) => {
     e.preventDefault();
     alert("Password changed!");
-    console.log("Change Password:", passwordData);
+    console.log("Change Sneha Password:", passwordData);
   };
 
   const renderMainContent = () => {
