@@ -11,6 +11,7 @@ const port = 3001;
 async function scrapeAmazon(url) {
   let browser;
   try {
+    console.log("Fetching Amazon page with Axios...");
     const { data } = await axios.get(url, {
       headers: {
         "User-Agent":
@@ -237,6 +238,153 @@ async function scrapeFlipkart(url) {
   }
 }
 
+async function scrapeBlinkit(url) {
+  let browser;
+  try {
+    console.log("Fetching Blinkit page with Axios...");
+    const { data } = await axios.get(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      },
+    });
+    const $ = cheerio.load(data);
+
+    const products = [];
+    // Corrected selector: .cPHDOP.col-12-12 (no space)
+    $(".tw-relative.tw-flex.tw-h-full.tw-flex-col.tw-items-start").each(
+      (i, el) => {
+        const name =
+          $(el)
+            .find(".tw-text-300.tw-font-semibold.tw-line-clamp-2")
+            .text()
+            .trim() || "N/A";
+        // Corrected price selector: Ensure class is properly targeted
+        const priceText =
+          $(el)
+            .find(".tw-text-200.tw-font-semibold")
+            .text()
+            .replace(/[^\d.]/g, "") || "0.0";
+        const price = parseFloat(priceText) || 0.0;
+        const rating =
+          $(el)
+            .find(".XQDdHH")
+            .text()
+            .match(/\d+\.\d+/)?.[0] || "0.0";
+        const reviews = $(el).find(".Wphh3N").text().match(/\d+/)?.[0] || "0";
+        const imageUrl =
+          $(el)
+            .find(".tw-h-full.tw-w-full.tw-transition-opacity.tw-opacity-100")
+            .attr("src") || "N/A";
+
+        if (name !== "N/A" && price !== 0 && imageUrl !== "N/A") {
+          products.push({
+            name,
+            price,
+            rating: parseFloat(rating),
+            reviews: parseInt(reviews),
+            image_url: imageUrl,
+          });
+        }
+      }
+    );
+
+    if (products.length === 0) {
+      console.log(
+        "No products found with Cheerio, falling back to Puppeteer..."
+      );
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        timeout: 60000,
+      });
+      const page = await browser.newPage();
+      await page.setUserAgent(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+      );
+      await page.setViewport({ width: 1280, height: 800 });
+
+      console.log(`Navigating to ${url}...`);
+      await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+
+      // Corrected selector for waitForSelector
+      await page
+        .waitForSelector(
+          ".tw-relative.tw-flex.tw-h-full.tw-flex-col.tw-items-start",
+          { timeout: 10000 }
+        )
+        .catch((e) =>
+          console.log("Parent container selector not found:", e.message)
+        );
+      await autoScroll(page); // Ensure all products load
+
+      const dynamicProducts = await page.evaluate(() => {
+        // Scope to product containers
+        const items = Array.from(
+          document.querySelectorAll(
+            ".tw-relative.tw-flex.tw-h-full.tw-flex-col.tw-items-start"
+          )
+        );
+        console.log(`Found ${items.length} product containers`);
+        return items
+          .map((item) => {
+            try {
+              const name =
+                item
+                  .querySelector(
+                    ".tw-text-300.tw-font-semibold.tw-line-clamp-2"
+                  )
+                  ?.textContent.trim() || "N/A";
+              const priceText =
+                item
+                  .querySelector(".tw-text-200.tw-font-semibold")
+                  ?.textContent.replace(/[^\d.]/g, "") || "0.0";
+              const price = priceText ? parseFloat(priceText) : 0.0;
+              const ratingText =
+                item
+                  .querySelector(".XQDdHH")
+                  ?.textContent.match(/\d+\.\d+/)?.[0] || "0.0";
+              const rating = ratingText ? parseFloat(ratingText) : 0.0;
+              const reviewsText =
+                item.querySelector(".Wphh3N")?.textContent.match(/\d+/)?.[0] ||
+                "0";
+              const reviews = reviewsText ? parseInt(reviewsText) : 0;
+              const imageUrl =
+                item.querySelector(
+                  ".tw-h-full.tw-w-full.tw-transition-opacity.tw-opacity-100"
+                )?.src || "N/A";
+
+              return { name, price, rating, reviews, image_url: imageUrl };
+            } catch (e) {
+              console.error("Error parsing Blinkit product:", e);
+              return null;
+            }
+          })
+          .filter(
+            (item) =>
+              item !== null &&
+              item.name !== "N/A" &&
+              item.price !== 0 &&
+              item.image_url !== "N/A"
+          );
+      });
+
+      console.log(`Puppeteer found ${dynamicProducts.length} products`);
+      return dynamicProducts.length > 0 ? dynamicProducts : products;
+    }
+
+    return products;
+  } catch (e) {
+    console.error("Blinkit scraping error:", e);
+    return [];
+  } finally {
+    if (browser) {
+      console.log("Closing Puppeteer browser...");
+      await browser.close();
+    }
+  }
+}
+
 // Helper function to scroll page for dynamic content
 async function autoScroll(page) {
   await page.evaluate(async () => {
@@ -278,6 +426,20 @@ app.get("/scrape-flipkart", async (req, res) => {
     res.status(500).json({
       error: "No data scraped from Flipkart",
       details: "Check server logs or flipkart-debug.png for more info",
+    });
+  }
+});
+
+app.get("/scrape-blinkit", async (req, res) => {
+  const search = req.query.search || "Samsung Galaxy F14 5G";
+  const url = `https://blinkit.com/s/?q=${search.replace(/ /g, "%20")}`;
+  const products = await scrapeBlinkit(url);
+  if (products.length > 0) {
+    res.json(products);
+  } else {
+    res.status(500).json({
+      error: "No data scraped from Blinkit",
+      details: "Check server logs or blinkit-debug.png for more info",
     });
   }
 });

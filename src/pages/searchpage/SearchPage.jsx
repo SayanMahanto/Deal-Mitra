@@ -32,7 +32,7 @@ const colors = [
 ];
 
 export default function SearchPage() {
-  const [search, setSearch] = useState("Samsung Galaxy F14 5G");
+  const [search, setSearch] = useState("");
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +44,7 @@ export default function SearchPage() {
 
   // URLs for Amazon and Flipkart
   const amazonUrl = `https://www.amazon.in/s?k=${search.replace(/ /g, "+")}`;
+  const blinkitUrl = `https://blinkit.com/s/?q=${search.replace(/ /g, "%20")}`;
   const flipkartUrl = `https://www.flipkart.com/search?q=${search.replace(
     / /g,
     "+"
@@ -82,24 +83,35 @@ export default function SearchPage() {
     let errorMessages = [];
 
     try {
-      const [amazonResponse, flipkartResponse] = await Promise.all([
-        fetch(
-          `http://localhost:3001/scrape-amazon?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
-          .then((res) => res.json())
-          .catch((e) => ({ error: `Amazon scraping failed: ${e.message}` })),
-        fetch(
-          `http://localhost:3001/scrape-flipkart?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
-          .then((res) => res.json())
-          .catch((e) => ({ error: `Flipkart scraping failed: ${e.message}` })),
-      ]);
+      const [amazonResponse, flipkartResponse, blinkitResponse] =
+        await Promise.all([
+          fetch(
+            `http://localhost:3001/scrape-amazon?search=${search.replace(
+              / /g,
+              "+"
+            )}`
+          )
+            .then((res) => res.json())
+            .catch((e) => ({ error: `Amazon scraping failed: ${e.message}` })),
+          fetch(
+            `http://localhost:3001/scrape-flipkart?search=${search.replace(
+              / /g,
+              "+"
+            )}`
+          )
+            .then((res) => res.json())
+            .catch((e) => ({
+              error: `Flipkart scraping failed: ${e.message}`,
+            })),
+          fetch(
+            `http://localhost:3001/scrape-blinkit?search=${search.replace(
+              / /g,
+              "%20"
+            )}`
+          )
+            .then((res) => res.json())
+            .catch((e) => ({ error: `Blinkit scraping failed: ${e.message}` })),
+        ]);
 
       let amazonProducts = [];
       if (amazonResponse.error) {
@@ -135,7 +147,28 @@ export default function SearchPage() {
         }));
       }
 
-      const combinedProducts = [...amazonProducts, ...flipkartProducts];
+      let blinkitProducts = [];
+      if (blinkitResponse.error) {
+        errorMessages.push(blinkitResponse.error);
+      } else {
+        blinkitProducts = blinkitResponse.map((product, index) => ({
+          id: `blinkit-${index}`,
+          name: product.name,
+          price: `₹${product.price.toLocaleString()}`,
+          rating: parseFloat(product.rating) || 0,
+          image: product.image_url,
+          reviews: product.reviews,
+          source: "blinkit",
+          category: inferCategory(product.name), // Optional: infer category
+          color: inferColor(product.name), // Optional: infer color
+        }));
+      }
+
+      const combinedProducts = [
+        ...amazonProducts,
+        ...flipkartProducts,
+        ...blinkitProducts,
+      ];
       setProducts(combinedProducts);
 
       if (combinedProducts.length > 0) {
@@ -331,6 +364,18 @@ export default function SearchPage() {
               className="mt-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600"
             >
               Visit Flipkart
+            </button>
+            <p className="text-gray-600 mt-4">
+              Blinkit URL:{" "}
+              <a href={blinkitUrl} className="text-blue-500">
+                {blinkitUrl}
+              </a>
+            </p>
+            <button
+              onClick={() => handleNavigate(blinkitUrl)}
+              className="mt-2 bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600"
+            >
+              Visit Blinkit
             </button>
           </div>
 
