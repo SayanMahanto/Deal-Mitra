@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Client, Account } from "appwrite";
+import cors from "cors";
+
+app.use(cors());
 
 function Login() {
   const [email, setEmail] = useState("");
