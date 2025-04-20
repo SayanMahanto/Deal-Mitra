@@ -5,10 +5,10 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: "",
-    website: "",
-    facebook: "",
-    twitter: "",
+    Age: "",
+    Contact: "",
+    Instagram_id: "",
+    Facebook_id: "",
   });
 
   const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).substring(7));
@@ -21,11 +21,13 @@ const EditProfile = () => {
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
+    confirmPassword: "",
   });
   const [deletePassword, setDeletePassword] = useState("");
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleProfileUpdate = (e) => {
@@ -35,6 +37,9 @@ const EditProfile = () => {
   const handlePasswordChange = (e) => setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
   const handleChangePassword = (e) => {
     e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return alert("New password and confirm password do not match.");
+    }
     console.log("Password changed:", passwordData);
   };
 
@@ -72,7 +77,7 @@ const EditProfile = () => {
           </div>
 
           <form onSubmit={handleProfileUpdate} className="space-y-5">
-            {["firstName", "lastName", "email", "website", "facebook", "twitter"].map((field) => (
+            {["firstName", "lastName", "Age", "Contact No.", "Instagram Id", "Facebook Id"].map((field) => (
               <div key={field}>
                 <label className="block text-sm font-semibold text-gray-700 capitalize mb-1">
                   {field.replace(/([A-Z])/g, " $1")}
@@ -102,41 +107,49 @@ const EditProfile = () => {
         <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-6 text-gray-800">Change Password</h2>
           <form onSubmit={handleChangePassword} className="space-y-5">
-            {[
-              {
-                label: "Old Password",
-                name: "oldPassword",
-                visible: showOldPassword,
-                toggle: () => setShowOldPassword(!showOldPassword),
-              },
-              {
-                label: "New Password",
-                name: "newPassword",
-                visible: showNewPassword,
-                toggle: () => setShowNewPassword(!showNewPassword),
-              },
-            ].map(({ label, name, visible, toggle }) => (
-              <div className="relative" key={name}>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">{label}</label>
-                <input
-                  type={visible ? "text" : "password"}
-                  name={name}
-                  value={passwordData[name]}
-                  onChange={handlePasswordChange}
-                  className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
-                />
-                <button type="button" onClick={toggle} className="absolute right-3 top-9 text-gray-500">
-                  {visible ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            ))}
-            <button
-              type="submit"
-              className="w-full bg-[#F0C808] text-white py-2 rounded-lg font-semibold hover:bg-[#DD1C1A] transition"
-            >
-              Change Password
-            </button>
-          </form>
+  {[
+    {
+      label: "Old Password",
+      name: "oldPassword",
+      visible: showOldPassword,
+      toggle: () => setShowOldPassword(!showOldPassword),
+    },
+    {
+      label: "New Password",
+      name: "newPassword",
+      visible: showNewPassword,
+      toggle: () => setShowNewPassword(!showNewPassword),
+    },
+    {
+      label: "Confirm Password",
+      name: "confirmPassword",
+      visible: showConfirmPassword,
+      toggle: () => setShowConfirmPassword(!showConfirmPassword),
+    },
+  ].map(({ label, name, visible, toggle }) => (
+    <div className="relative" key={name}>
+      <label className="block text-sm font-semibold mb-1 text-gray-700">{label}</label>
+      <input
+        type={visible ? "text" : "password"}
+        name={name}
+        value={passwordData[name]}
+        onChange={handlePasswordChange}
+        className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
+      />
+      <button type="button" onClick={toggle} className="absolute right-3 top-9 text-gray-500">
+        {visible ? <EyeOff size={20} /> : <Eye size={20} />}
+      </button>
+    </div>
+  ))}
+
+  <button
+    type="submit"
+    className="w-full bg-[#F0C808] text-white py-2 rounded-lg font-semibold hover:bg-[#DD1C1A] transition"
+  >
+    Change Password
+  </button>
+</form>
+
         </div>
       );
     }
