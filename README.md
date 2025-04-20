@@ -1,16 +1,8 @@
-# React + Vite
-
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-
-# Deal-Mitra
-
-# Deal-Mitra-Dev
+### INTSTRUCTIONS TO RUN WEB APP
+1. Make a new folder in desktop. Open it and right click to open git bash.
+2. Paste the command : git clone https://github.com/SayanMahanto/Deal-Mitra.git
+3. In VS CODE terminal, go to Deal-Mitra and run the command to install all the dependencies needed to run the web app:        
+   npm i @tailwindcss/vite appwrite axios cheerio cors dotenv express puppeteer react react-dom react-icons react-router-dom
+4. Next in the terminal run the command: node server/scrapper.js
+5. Split the terminal and in the next terminal run the command : npm run dev
+6. Wolla!!! Yorr web app is running!!!
