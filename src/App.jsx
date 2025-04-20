@@ -1,4 +1,3 @@
-import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import {
   Dashboard,
@@ -7,6 +6,7 @@ import {
   SearchPage,
   SearchPage2,
   FilterPage,
+  SearchPagev3,
 } from "./pages/index.js";
 
 function App() {
@@ -17,6 +17,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/searchpage" element={<SearchPage2 />} />
       <Route path="/searchpagemain" element={<SearchPage />} />
+      <Route path="/searchpagev3" element={<SearchPagev3 />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/" element={<Login />} />
     </Routes>

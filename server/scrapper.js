@@ -40,6 +40,9 @@ async function scrapeAmazon(url) {
           .text()
           .replace(/[^\d]/g, "") || "0";
       const imageUrl = $(el).find("img.s-image").attr("src") || "N/A";
+      const productUrl = $(el).find("a.a-link-normal").attr("href")
+        ? `https://www.amazon.in${$(el).find("a.a-link-normal").attr("href")}`
+        : "N/A";
 
       if (name !== "N/A" && price !== 0 && imageUrl !== "N/A") {
         products.push({
@@ -48,6 +51,7 @@ async function scrapeAmazon(url) {
           rating: parseFloat(rating),
           reviews: parseInt(reviews),
           image_url: imageUrl,
+          product_url: productUrl,
         });
       }
     });
@@ -81,8 +85,20 @@ async function scrapeAmazon(url) {
                 ?.textContent.replace(/[^\d]/g, "");
               const reviews = reviewsText ? parseInt(reviewsText) : 0;
               const imageUrl = item.querySelector("img.s-image")?.src || "N/A";
+              const productUrl = item.querySelector("a.a-link-normal")?.href
+                ? `https://www.amazon.in${
+                    item.querySelector("a.a-link-normal")?.href
+                  }`
+                : "N/A";
 
-              return { name, price, rating, reviews, image_url: imageUrl };
+              return {
+                name,
+                price,
+                rating,
+                reviews,
+                image_url: imageUrl,
+                product_url: productUrl,
+              };
             } catch (e) {
               console.error("Error parsing product:", e);
               return null;
@@ -137,6 +153,11 @@ async function scrapeFlipkart(url) {
           .match(/\d+\.\d+/)?.[0] || "0.0";
       const reviews = $(el).find(".Wphh3N").text().match(/\d+/)?.[0] || "0";
       const imageUrl = $(el).find(".DByuf4,._53J4C-").attr("src") || "N/A";
+      const productUrl = $(el).find("a.CGtC98,a.wjcEIp").attr("href")
+        ? `https://www.flipkart.com${$(el)
+            .find("a.CGtC98,a.wjcEIp")
+            .attr("href")}`
+        : "N/A";
 
       if (
         name !== "N/A" &&
@@ -150,6 +171,7 @@ async function scrapeFlipkart(url) {
           rating: parseFloat(rating),
           reviews: parseInt(reviews),
           image_url: imageUrl,
+          product_url: productUrl,
         });
       }
     });
@@ -177,7 +199,7 @@ async function scrapeFlipkart(url) {
         .catch((e) =>
           console.log("Parent container selector not found:", e.message)
         );
-      await autoScroll(page); // Ensure all products load
+      await autoScroll(page);
 
       await page.screenshot({ path: "flipkart-debug.png", fullPage: true });
 
@@ -207,8 +229,20 @@ async function scrapeFlipkart(url) {
               const reviews = reviewsText ? parseInt(reviewsText) : 0;
               const imageUrl =
                 item.querySelector(".DByuf4,._53J4C-")?.src || "N/A";
+              const productUrl = item.querySelector("a.CGtC98,a.wjcEIp")?.href
+                ? `https://www.flipkart.com${
+                    item.querySelector("a.CGtC98,a.wjcEIp")?.href
+                  }`
+                : "N/A";
 
-              return { name, price, rating, reviews, image_url: imageUrl };
+              return {
+                name,
+                price,
+                rating,
+                reviews,
+                image_url: imageUrl,
+                product_url: productUrl,
+              };
             } catch (e) {
               console.error("Error parsing Flipkart product:", e);
               return null;
@@ -278,6 +312,10 @@ async function scrapeZepto(url) {
             "img.relative.overflow-hidden.rounded-lg.relative.aspect-square.w-full.bg-white.transition-all.ease-in-out"
           )
           .attr("src") || "N/A";
+      const rawHref = $(el).attr("href") || "";
+      const productUrl = rawHref.startsWith("http")
+        ? rawHref
+        : `https://www.zeptonow.com${rawHref}`;
 
       if (
         name !== "N/A" &&
@@ -291,6 +329,7 @@ async function scrapeZepto(url) {
           rating: parseFloat(rating),
           reviews: parseInt(reviews),
           image_url: imageUrl,
+          product_url: productUrl,
         });
       }
     });
@@ -318,7 +357,7 @@ async function scrapeZepto(url) {
         .catch((e) =>
           console.log("Parent container selector not found:", e.message)
         );
-      await autoScroll(page); // Ensure all products load
+      await autoScroll(page);
 
       await page.screenshot({ path: "zepto-debug.png", fullPage: true });
 
@@ -360,8 +399,19 @@ async function scrapeZepto(url) {
                 item.querySelector(
                   "img.relative.overflow-hidden.rounded-lg.relative.aspect-square.w-full.bg-white.transition-all.ease-in-out"
                 )?.src || "N/A";
+              const href = item.href || "";
+              const productUrl = href.startsWith("http")
+                ? href
+                : `https://www.zeptonow.com${href}`;
 
-              return { name, price, rating, reviews, image_url: imageUrl };
+              return {
+                name,
+                price,
+                rating,
+                reviews,
+                image_url: imageUrl,
+                product_url: productUrl,
+              };
             } catch (e) {
               console.error("Error parsing Zepto product:", e);
               return null;
@@ -423,6 +473,9 @@ async function scrapeInstamart(url) {
         $(el).find(".reviews, .review-count").text().match(/\d+/)?.[0] || "0";
       const imageUrl =
         $(el).find(".sc-dcJsrY.ibghhT._1NxA5").attr("src") || "N/A";
+      const productUrl = $(el).find("a").attr("href")
+        ? `https://www.swiggy.com${$(el).find("a").attr("href")}`
+        : "N/A";
 
       if (
         name !== "N/A" &&
@@ -436,6 +489,7 @@ async function scrapeInstamart(url) {
           rating: parseFloat(rating),
           reviews: parseInt(reviews),
           image_url: imageUrl,
+          product_url: productUrl,
         });
       }
     });
@@ -463,7 +517,7 @@ async function scrapeInstamart(url) {
         .catch((e) =>
           console.log("Parent container selector not found:", e.message)
         );
-      await autoScroll(page); // Ensure all products load
+      await autoScroll(page);
 
       await page.screenshot({ path: "instamart-debug.png", fullPage: true });
 
@@ -495,8 +549,18 @@ async function scrapeInstamart(url) {
               const reviews = reviewsText ? parseInt(reviewsText) : 0;
               const imageUrl =
                 item.querySelector(".sc-dcJsrY.ibghhT._1NxA5")?.src || "N/A";
+              const productUrl = item.querySelector("a")?.href
+                ? `https://www.swiggy.com${item.querySelector("a")?.href}`
+                : "N/A";
 
-              return { name, price, rating, reviews, image_url: imageUrl };
+              return {
+                name,
+                price,
+                rating,
+                reviews,
+                image_url: imageUrl,
+                product_url: productUrl,
+              };
             } catch (e) {
               console.error("Error parsing Instamart product:", e);
               return null;
@@ -575,6 +639,9 @@ async function scrapeBigBasket(url) {
         $(el)
           .find(".DeckImage___StyledImage-sc-1mdvxwk-3.cSWRCd")
           .attr("src") || "N/A";
+      const productUrl = $(el).find("a").attr("href")
+        ? `${$(el).find("a").attr("href")}`
+        : "N/A";
 
       if (
         name !== "N/A" &&
@@ -588,6 +655,7 @@ async function scrapeBigBasket(url) {
           rating: parseFloat(rating),
           reviews: parseInt(reviews),
           image_url: imageUrl,
+          product_url: productUrl,
         });
       }
     });
@@ -615,7 +683,7 @@ async function scrapeBigBasket(url) {
         .catch((e) =>
           console.log("Parent container selector not found:", e.message)
         );
-      await autoScroll(page); // Ensure all products load
+      await autoScroll(page);
 
       await page.screenshot({ path: "bigbasket-debug.png", fullPage: true });
 
@@ -661,8 +729,18 @@ async function scrapeBigBasket(url) {
                 item.querySelector(
                   ".DeckImage___StyledImage-sc-1mdvxwk-3.cSWRCd"
                 )?.src || "N/A";
+              const productUrl = item.querySelector("a")?.href
+                ? `${item.querySelector("a")?.href}`
+                : "N/A";
 
-              return { name, price, rating, reviews, image_url: imageUrl };
+              return {
+                name,
+                price,
+                rating,
+                reviews,
+                image_url: imageUrl,
+                product_url: productUrl,
+              };
             } catch (e) {
               console.error("Error parsing BigBasket product:", e);
               return null;
