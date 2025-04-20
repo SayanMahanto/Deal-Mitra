@@ -2,16 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Client, Account, Databases, ID } from "appwrite";
 
-function Signup() {
+const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
-  const avatarSeed = Math.random().toString(36).substring(7); // Unique seed
-  const userId = ID.unique(); // Unique user ID
+  const navigate = useNavigate();
 
   const envVars = {
     VITE_APPWRITE_URL: import.meta.env.VITE_APPWRITE_URL,
@@ -32,11 +30,6 @@ function Signup() {
   const databases = client ? new Databases(client) : null;
   const account = client ? new Account(client) : null;
 
-  const handleSignin = (e) => {
-    e.preventDefault();
-    navigate("/login");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!client) {
@@ -45,12 +38,20 @@ function Signup() {
       );
       return;
     }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
     if (!name.trim()) {
       setError("Name is required");
+      return;
+    }
+    if (!email.trim() || !/^[^ ]+@[^ ]+\.[a-z]{2,3}$/.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
@@ -61,16 +62,10 @@ function Signup() {
         envVars.VITE_APPWRITE_DATABASE_ID,
         envVars.VITE_APPWRITE_COLLECTION_ID,
         ID.unique(),
-        {
-          email: email,
-          password: password,
-          name: name,
-        }
+        { email, password, name }
       );
-      console.log("User registered successfully:", { email, name });
       navigate("/login");
       setEmail("");
-      setPhone("");
       setPassword("");
       setConfirmPassword("");
       setName("");
@@ -79,107 +74,160 @@ function Signup() {
     }
   };
 
+  const styles = {
+    container: {
+      height: "100vh",
+      width: "100%",
+      background: `linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#fff",
+    },
+    formWrapper: {
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(16px)",
+      borderRadius: "18px",
+      padding: "2.5rem 2.5rem",
+      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+      maxWidth: "480px",
+      width: "100%",
+      animation: "fadeIn 0.9s ease-out",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    heading: {
+      marginBottom: "24px",
+      fontSize: "30px",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "#FFF",
+    },
+    inputGroup: {
+      position: "relative",
+      margin: "16px 0",
+    },
+    icon: {
+      position: "absolute",
+      top: "50%",
+      left: "14px",
+      transform: "translateY(-50%)",
+      color: "#aaa",
+      fontSize: "14px",
+      pointerEvents: "none",
+    },
+    input: {
+      width: "100%",
+      padding: "13px 13px 13px 42px",
+      borderRadius: "10px",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.06)",
+      color: "#fff",
+      fontSize: "15px",
+      outline: "none",
+      transition: "0.3s ease",
+    },
+    button: {
+      width: "100%",
+      padding: "14px",
+      background: "linear-gradient(to right, #06beb6, #48b1bf)",
+      border: "none",
+      borderRadius: "10px",
+      color: "#fff",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      marginTop: "20px",
+      transition: "all 0.3s ease",
+    },
+    backLink: {
+      marginTop: "22px",
+      fontSize: "14px",
+      textAlign: "center",
+      color: "#ccc",
+    },
+    anchor: {
+      color: "#ffffff",
+      textDecoration: "underline",
+      fontWeight: 500,
+    },
+    error: {
+      color: "#ff4d4f",
+      marginBottom: "10px",
+      fontSize: "14px",
+      textAlign: "center",
+    },
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Register
+    <div style={styles.container}>
+      <div style={styles.formWrapper}>
+        <h2 style={styles.heading}>
+          <i className="fas fa-store"></i> Create Your Account
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="name"
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirmPassword"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Confirm your password"
-              required
-            />
-            {password !== confirmPassword && (
-              <p className="text-red-500 text-xs mt-2">
-                Passwords do not match
-              </p>
-            )}
-            {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Sign Up
+          {error && <div style={styles.error}>{error}</div>}
+          {[
+            {
+              icon: "fas fa-user",
+              id: "name",
+              type: "text",
+              placeholder: "Full Name",
+              value: name,
+              onChange: setName,
+            },
+            {
+              icon: "fas fa-envelope",
+              id: "email",
+              type: "email",
+              placeholder: "Email Address",
+              value: email,
+              onChange: setEmail,
+            },
+            {
+              icon: "fas fa-lock",
+              id: "password",
+              type: "password",
+              placeholder: "Password",
+              value: password,
+              onChange: setPassword,
+            },
+            {
+              icon: "fas fa-lock",
+              id: "confirmPassword",
+              type: "password",
+              placeholder: "Confirm Password",
+              value: confirmPassword,
+              onChange: setConfirmPassword,
+            },
+          ].map(({ icon, id, type, placeholder, value, onChange }) => (
+            <div style={styles.inputGroup} key={id}>
+              <i className={icon} style={styles.icon}></i>
+              <input
+                id={id}
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                style={styles.input}
+                required
+              />
+            </div>
+          ))}
+          <button type="submit" style={styles.button}>
+            Register
           </button>
         </form>
-        <p className="text-center text-gray-600 text-sm mt-6">
-          Already have an account?{" "}
-          <a
-            href="#"
-            className="text-blue-500 hover:underline"
-            onClick={handleSignin}
-          >
-            Sign in
+        <p style={styles.backLink}>
+          Already registered?{" "}
+          <a href="/login" style={styles.anchor}>
+            Sign In
           </a>
         </p>
       </div>
     </div>
   );
-}
+};
 
 export default Signup;

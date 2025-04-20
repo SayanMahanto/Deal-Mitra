@@ -7,6 +7,7 @@ import {
   SearchPage2,
   FilterPage,
   SearchPagev3,
+  RecipePage,
 } from "./pages/index.js";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <Route path="/searchpage" element={<SearchPage2 />} />
       <Route path="/searchpagemain" element={<SearchPage />} />
       <Route path="/searchpagev3" element={<SearchPagev3 />} />
+      <Route path="/recipepage" element={<RecipePage />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/" element={<Login />} />
     </Routes>

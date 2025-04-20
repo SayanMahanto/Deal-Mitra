@@ -69,73 +69,155 @@ function Login() {
     }
   };
 
+  const styles = {
+    container: {
+      height: "100vh",
+      width: "100%",
+      background: "linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#fff",
+    },
+    formWrapper: {
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(16px)",
+      borderRadius: "18px",
+      padding: "2.5rem 2.5rem",
+      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+      maxWidth: "480px",
+      width: "100%",
+      animation: "fadeIn 0.9s ease-out",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    heading: {
+      marginBottom: "24px",
+      fontSize: "30px",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "#FFF",
+    },
+    inputGroup: {
+      position: "relative",
+      margin: "16px 0",
+    },
+    icon: {
+      position: "absolute",
+      top: "50%",
+      left: "14px",
+      transform: "translateY(-50%)",
+      color: "#aaa",
+      fontSize: "14px",
+      pointerEvents: "none",
+    },
+    input: {
+      width: "100%",
+      padding: "13px 13px 13px 42px",
+      borderRadius: "10px",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.06)",
+      color: "#fff",
+      fontSize: "15px",
+      outline: "none",
+      transition: "0.3s ease",
+    },
+    button: {
+      width: "100%",
+      padding: "14px",
+      background: "linear-gradient(to right, #06beb6, #48b1bf)",
+      border: "none",
+      borderRadius: "10px",
+      color: "#fff",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      marginTop: "20px",
+      transition: "all 0.3s ease",
+    },
+    backLink: {
+      marginTop: "22px",
+      fontSize: "14px",
+      textAlign: "center",
+      color: "#ccc",
+    },
+    anchor: {
+      color: "#ffffff",
+      textDecoration: "underline",
+      fontWeight: 500,
+      cursor: "pointer",
+    },
+    error: {
+      marginTop: "12px",
+      fontSize: "14px",
+      color: "red",
+      textAlign: "center",
+    },
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Login
-        </h2>
+    <div style={styles.container}>
+      <style>
+        {`
+          input:focus {
+            border-color: #06beb6;
+            box-shadow: 0 0 0 2px rgba(6, 190, 182, 0.4);
+          }
+
+          button:hover {
+            background: linear-gradient(to right, #48b1bf, #06beb6);
+            transform: translateY(-1px);
+          }
+        `}
+      </style>
+
+      <div style={styles.formWrapper}>
+        <h2 style={styles.heading}>Welcome Back</h2>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
-            >
-              Email
-            </label>
+          <div style={styles.inputGroup}>
+            <i className="fas fa-envelope" style={styles.icon}></i>
             <input
               type="email"
-              id="email"
+              placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your email"
               required
+              autoComplete="email"
+              style={styles.input}
             />
           </div>
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Password
-            </label>
+          <div style={styles.inputGroup}>
+            <i className="fas fa-lock" style={styles.icon}></i>
             <input
               type="password"
-              id="password"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
               required
+              autoComplete="current-password"
+              style={styles.input}
             />
-          </div>
-          <div className="flex items-center justify-between mb-6">
-            <a href="#" className="text-sm text-blue-500 hover:underline">
-              Forgot Password?
-            </a>
           </div>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            style={{
+              ...styles.button,
+              background: isSubmitting ? "#999" : styles.button.background,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+            }}
           >
             {isSubmitting ? "Signing In..." : "Sign In"}
           </button>
         </form>
-        <p className="text-center text-gray-600 text-sm mt-6">
-          Don't have an account?{" "}
-          <a
-            href="#"
-            className="text-blue-500 hover:underline"
-            onClick={handleSignup}
-          >
-            Sign up
-          </a>
+        <p style={styles.backLink}>
+          Don&apos;t have an account?{" "}
+          <span style={styles.anchor} onClick={handleSignup}>
+            Sign Up
+          </span>
         </p>
-        {error && (
-          <p className="text-red-500 text-xs mt-2 text-center">{error}</p>
-        )}
+        {error && <p style={styles.error}>{error}</p>}
       </div>
     </div>
   );
