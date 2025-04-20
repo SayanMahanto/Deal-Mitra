@@ -338,7 +338,7 @@ const SearchPagev3 = () => {
       {/* Header with User Icon on the Left */}
       <div className="flex items-center justify-between p-4 bg-white shadow-md">
         <img src="/public/Logo.jpg" alt="" height="80px" width="80px" />
-        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-gray-800">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-3xl font-bold text-gray-800">
           DEAL MITRA
         </h1>
         <FaUserCircle
