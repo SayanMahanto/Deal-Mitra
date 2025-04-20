@@ -1,195 +1,235 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Client, Account } from "appwrite";
-import { Eye, EyeOff, Sun, Moon } from "lucide-react";
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
-function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const navigate = useNavigate();
+const EditProfile = () => {
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    website: "",
+    facebook: "",
+    twitter: "",
+  });
 
-  const envVars = {
-    VITE_APPWRITE_URL: import.meta.env.VITE_APPWRITE_URL,
-    VITE_APPWRITE_PROJECT_ID: import.meta.env.VITE_APPWRITE_PROJECT_ID,
+  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).substring(7));
+  const generateRandomAvatar = () => {
+    const newSeed = Math.random().toString(36).substring(7);
+    setAvatarSeed(newSeed);
   };
 
-  let client = null;
-  if (envVars.VITE_APPWRITE_URL && envVars.VITE_APPWRITE_PROJECT_ID) {
-    client = new Client()
-      .setEndpoint(envVars.VITE_APPWRITE_URL)
-      .setProject(envVars.VITE_APPWRITE_PROJECT_ID);
-  } else {
-    console.error("Missing required environment variables:", envVars);
-  }
+  const [activeTab, setActiveTab] = useState("profileDetails");
+  const [passwordData, setPasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [deletePassword, setDeletePassword] = useState("");
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const account = client ? new Account(client) : null;
-
-  const handleSignup = (e) => {
+  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleProfileUpdate = (e) => {
     e.preventDefault();
-    navigate("/signup");
+    console.log("Profile updated:", formData);
   };
-
-  const handleSubmit = async (e) => {
+  const handlePasswordChange = (e) => setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+  const handleChangePassword = (e) => {
     e.preventDefault();
-    if (!client) {
-      setError("Appwrite client is not initialized. Check environment variables.");
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert("New password and confirm password do not match.");
       return;
     }
-    if (!email.trim() || !password.trim()) {
-      setError("Email and password are required");
-      return;
-    }
+    console.log("Password changed:", passwordData);
+  };
 
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setError("");
-
-    try {
-      await account.createEmailPasswordSession(email, password);
-
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      } else {
-        localStorage.removeItem("rememberedEmail");
-      }
-
-      navigate("/searchPage");
-      setEmail("");
-      setPassword("");
-    } catch (err) {
-      if (err.message.includes("invalid credentials")) {
-        setError("Invalid email or password. Please try again.");
-      } else if (err.message.includes("Rate limit")) {
-        setError("Rate limit exceeded. Please try again after a few minutes.");
-        setTimeout(() => setError(""), 5000);
-      } else {
-        setError(err.message || "An error occurred during login");
-      }
-    } finally {
-      setIsSubmitting(false);
+  const handleTemporaryDelete = () => {
+    if (!deletePassword) return alert("Please enter your password to confirm.");
+    if (confirm("Are you sure you want to temporarily delete your account?")) {
+      console.log("Temporary account deletion triggered with password:", deletePassword);
     }
   };
 
-  useEffect(() => {
-    const savedEmail = localStorage.getItem("rememberedEmail");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      setRememberMe(true);
+  const handlePermanentDelete = () => {
+    if (!deletePassword) return alert("Please enter your password to confirm.");
+    if (confirm("⚠️ This action is irreversible. Do you really want to permanently delete your account?")) {
+      console.log("Permanent account deletion triggered with password:", deletePassword);
     }
-  }, []);
+  };
+
+  const renderMainContent = () => {
+    if (activeTab === "profileDetails") {
+      return (
+        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl transition-all">
+          <div className="text-center mb-6">
+            <img
+              src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${avatarSeed}`}
+              alt="Avatar"
+              className="w-28 h-28 mx-auto rounded-full border-4 border-[#06AED5]"
+            />
+            <button
+              type="button"
+              onClick={generateRandomAvatar}
+              className="mt-3 text-sm text-[#086788] underline hover:text-[#DD1C1A] transition"
+            >
+              Generate Random Avatar
+            </button>
+          </div>
+
+          <form onSubmit={handleProfileUpdate} className="space-y-5">
+            {["firstName", "lastName", "email", "website", "facebook", "twitter"].map((field) => (
+              <div key={field}>
+                <label className="block text-sm font-semibold text-gray-700 capitalize mb-1">
+                  {field.replace(/([A-Z])/g, " $1")}
+                </label>
+                <input
+                  type={field === "email" ? "email" : "text"}
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
+                />
+              </div>
+            ))}
+            <button
+              type="submit"
+              className="w-full bg-[#06AED5] text-white py-2 rounded-lg font-semibold hover:bg-[#086788] transition"
+            >
+              Save Changes
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    if (activeTab === "changePassword") {
+      return (
+        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl">
+          <h2 className="text-xl font-bold mb-6 text-gray-800">Change Password</h2>
+          <form onSubmit={handleChangePassword} className="space-y-5">
+            {[
+              {
+                label: "Old Password",
+                name: "oldPassword",
+                visible: showOldPassword,
+                toggle: () => setShowOldPassword(!showOldPassword),
+              },
+              {
+                label: "New Password",
+                name: "newPassword",
+                visible: showNewPassword,
+                toggle: () => setShowNewPassword(!showNewPassword),
+              },
+              {
+                label: "Confirm Password",
+                name: "confirmPassword",
+                visible: showConfirmPassword,
+                toggle: () => setShowConfirmPassword(!showConfirmPassword),
+              },
+            ].map(({ label, name, visible, toggle }) => (
+              <div className="relative" key={name}>
+                <label className="block text-sm font-semibold mb-1 text-gray-700">{label}</label>
+                <input
+                  type={visible ? "text" : "password"}
+                  name={name}
+                  value={passwordData[name]}
+                  onChange={handlePasswordChange}
+                  className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
+                />
+                <button type="button" onClick={toggle} className="absolute right-3 top-9 text-gray-500">
+                  {visible ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="submit"
+              className="w-full bg-[#F0C808] text-white py-2 rounded-lg font-semibold hover:bg-[#DD1C1A] transition"
+            >
+              Change Password
+            </button>
+          </form>
+        </div>
+      );
+    }
+
+    if (activeTab === "deleteAccount") {
+      return (
+        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Delete Account</h2>
+          <p className="mb-4 text-gray-600">
+            You can temporarily deactivate your account or permanently delete it. Please choose carefully.
+          </p>
+          <div className="space-y-4">
+            <div className="relative">
+              <label className="block text-sm font-semibold mb-1 text-gray-700">Confirm Password</label>
+              <input
+                type={showDeletePassword ? "text" : "password"}
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
+                placeholder="Enter your password to confirm"
+              />
+              <button
+                type="button"
+                onClick={() => setShowDeletePassword(!showDeletePassword)}
+                className="absolute right-3 top-9 text-gray-500"
+              >
+                {showDeletePassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+
+            <button
+              onClick={handleTemporaryDelete}
+              className="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
+            >
+              Temporarily Delete Account
+            </button>
+            <button
+              onClick={handlePermanentDelete}
+              className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
+            >
+              Permanently Delete Account
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
-    <div className={`flex flex-col md:flex-row min-h-screen font-sans transition-colors duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}`}>
-      {/* Dark Mode Toggle */}
-      <button
-        className="absolute top-4 right-4 bg-gradient-to-r from-yellow-300 to-green-300 text-white px-3 py-2 rounded-full text-sm shadow-md hover:brightness-110 flex items-center gap-2"
-        onClick={() => setDarkMode(!darkMode)}
-      >
-        {darkMode ? <Sun size={16} /> : <Moon size={16} />} {darkMode ? "Light Mode" : "Dark Mode"}
-      </button>
+    <div className="min-h-screen bg-[#FFF1D0] p-6">
+      <div className="container mx-auto max-w-7xl">
+        <div className="grid md:grid-cols-[240px_1fr] gap-6">
+          <aside className="bg-white p-6 rounded-2xl shadow-lg space-y-2">
+            <h2 className="text-lg font-bold text-gray-800 mb-3">Account Settings</h2>
+            {[
+              { label: "My Dashboard", tab: "profileDetails" },
+              { label: "Change Password", tab: "changePassword" },
+              { label: "Delete Account", tab: "deleteAccount" },
+            ].map(({ label, tab }) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition ${
+                  activeTab === tab
+                    ? "bg-[#06AED5]/10 text-[#06AED5]"
+                    : "hover:bg-gray-100 text-gray-700"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </aside>
 
-      {/* Left Side */}
-      <div className="w-full md:w-1/2 p-10 flex flex-col justify-center animate-fade-in">
-        <h1 className="text-4xl font-bold mb-6 tracking-wide">DEAL MITRA</h1>
-        <h2 className="text-2xl font-semibold mb-2">Welcome back</h2>
-        <p className="text-sm text-opacity-80 mb-6">Please enter your details</p>
-
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1" htmlFor="email">
-              Email address
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md bg-white text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-              placeholder="you@example.com"
-              required
-            />
-          </div>
-
-          <div className="mb-4 relative">
-            <label className="block text-sm font-medium mb-1" htmlFor="password">
-              Password
-            </label>
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border rounded-md bg-white text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300"
-              placeholder="Enter your password"
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-9 text-yellow-500"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between mb-6">
-            <label className="flex items-center text-sm">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-                className="mr-2 accent-yellow-500"
-              />
-              Remember for 30 days
-            </label>
-            <a href="#" className="text-sm text-green-600 hover:underline">
-              Forgot password
-            </a>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-yellow-400 to-green-400 text-white font-semibold py-2 rounded-md hover:brightness-110 transition-all shadow-md"
-          >
-            {isSubmitting ? "Signing In..." : "Sign in"}
-          </button>
-
-          <div className="mt-4">
-            <button
-              type="button"
-              className="w-full border border-gray-300 flex items-center justify-center py-2 rounded-md text-sm hover:bg-yellow-100 text-gray-800 shadow-sm"
-            >
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" />
-              Sign in with Google
-            </button>
-          </div>
-
-          <p className="text-center text-sm mt-6">
-            Don't have an account?{' '}
-            <a href="#" onClick={handleSignup} className="text-green-600 hover:underline">
-              Sign up
-            </a>
-          </p>
-          {error && <p className="text-red-500 text-xs mt-2 text-center">{error}</p>}
-        </form>
-      </div>
-
-      {/* Right Side */}
-      <div className="hidden md:flex w-full md:w-1/2 bg-[#D8CFF2] dark:bg-gray-800 items-center justify-center animate-fade-in">
-        <img
-          src="/YellowGreen.png"
-          alt="YellowGreen Illustration"
-          className="w-full h-full object-cover"
-        />
+          <main className="min-h-[500px]">{renderMainContent()}</main>
+        </div>
       </div>
     </div>
   );
-}
+};
 
-export default Login;
+export default EditProfile;

@@ -37,9 +37,7 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!client) {
-      setError(
-        "Appwrite client is not initialized. Check environment variables."
-      );
+      setError("Appwrite client is not initialized. Check environment variables.");
       return;
     }
     if (password !== confirmPassword) {
@@ -64,10 +62,8 @@ function Signup() {
           name: name,
         }
       );
-      console.log("User registered successfully:", { email, name });
       navigate("/login");
       setEmail("");
-      setPhone("");
       setPassword("");
       setConfirmPassword("");
       setName("");
@@ -77,104 +73,95 @@ function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-          Register
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="name"
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gradient-to-br from-[#fef9ec] via-[#edfce4] to-[#d0f4c5]">
+      <div className="flex flex-col justify-center px-10 py-12">
+        <div className="max-w-md w-full mx-auto">
+          <h1 className="text-4xl font-extrabold text-[#3e3e3e] mb-4">DEAL MITRA</h1>
+          <h2 className="text-2xl font-semibold text-[#556b2f] mb-2">Create your account</h2>
+          <p className="text-sm text-[#6b705c] mb-6">Start your journey with us</p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-[#4d4d4d]">
+                Full name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-[#4d4d4d]">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-[#4d4d4d]">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#4d4d4d]">
+                Confirm Password
+              </label>
+              <input
+                id="confirmPassword"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
+                required
+              />
+            </div>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <button
+              type="submit"
+              className="w-full bg-gradient-to-r from-[#fcd34d] to-[#8bc34a] text-white py-2 rounded-lg font-semibold hover:from-[#fde68a] hover:to-[#9ccc65] shadow-md"
             >
-              Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your name"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
+              Sign Up
+            </button>
+          </form>
+
+          <p className="text-sm text-center text-[#6b705c] mt-6">
+            Already have an account?{' '}
+            <span
+              className="text-[#5b8c42] hover:underline cursor-pointer"
+              onClick={handleSignin}
             >
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <div className="mb-6">
-            <label
-              className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="confirmPassword"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Confirm your password"
-              required
-            />
-            {password !== confirmPassword && (
-              <p className="text-red-500 text-xs mt-2">
-                Passwords do not match
-              </p>
-            )}
-            {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            Sign Up
-          </button>
-        </form>
-        <p className="text-center text-gray-600 text-sm mt-6">
-          Already have an account?{" "}
-          <a
-            href="#"
-            className="text-blue-500 hover:underline"
-            onClick={handleSignin}
-          >
-            Sign in
-          </a>
-        </p>
+              Sign in
+            </span>
+          </p>
+        </div>
       </div>
+
+      <div className="hidden md:block bg-gradient-to-br from-[#fef9ec] via-[#dff7e1] to-[#bce7b1]" />
     </div>
   );
 }
