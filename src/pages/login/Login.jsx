@@ -1,235 +1,147 @@
-import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import React from "react";
 
-const EditProfile = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    website: "",
-    facebook: "",
-    twitter: "",
-  });
-
-  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).substring(7));
-  const generateRandomAvatar = () => {
-    const newSeed = Math.random().toString(36).substring(7);
-    setAvatarSeed(newSeed);
-  };
-
-  const [activeTab, setActiveTab] = useState("profileDetails");
-  const [passwordData, setPasswordData] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [deletePassword, setDeletePassword] = useState("");
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-  const handleProfileUpdate = (e) => {
+const SignIn = () => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Profile updated:", formData);
-  };
-  const handlePasswordChange = (e) => setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
-  const handleChangePassword = (e) => {
-    e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("New password and confirm password do not match.");
-      return;
-    }
-    console.log("Password changed:", passwordData);
+    const email = e.target.email.value;
+    const password = e.target.password.value;
+    console.log("Email:", email, "Password:", password);
+    // TODO: Add your sign-in logic
   };
 
-  const handleTemporaryDelete = () => {
-    if (!deletePassword) return alert("Please enter your password to confirm.");
-    if (confirm("Are you sure you want to temporarily delete your account?")) {
-      console.log("Temporary account deletion triggered with password:", deletePassword);
-    }
-  };
-
-  const handlePermanentDelete = () => {
-    if (!deletePassword) return alert("Please enter your password to confirm.");
-    if (confirm("⚠️ This action is irreversible. Do you really want to permanently delete your account?")) {
-      console.log("Permanent account deletion triggered with password:", deletePassword);
-    }
-  };
-
-  const renderMainContent = () => {
-    if (activeTab === "profileDetails") {
-      return (
-        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl transition-all">
-          <div className="text-center mb-6">
-            <img
-              src={`https://api.dicebear.com/7.x/lorelei/svg?seed=${avatarSeed}`}
-              alt="Avatar"
-              className="w-28 h-28 mx-auto rounded-full border-4 border-[#06AED5]"
-            />
-            <button
-              type="button"
-              onClick={generateRandomAvatar}
-              className="mt-3 text-sm text-[#086788] underline hover:text-[#DD1C1A] transition"
-            >
-              Generate Random Avatar
-            </button>
-          </div>
-
-          <form onSubmit={handleProfileUpdate} className="space-y-5">
-            {["firstName", "lastName", "email", "website", "facebook", "twitter"].map((field) => (
-              <div key={field}>
-                <label className="block text-sm font-semibold text-gray-700 capitalize mb-1">
-                  {field.replace(/([A-Z])/g, " $1")}
-                </label>
-                <input
-                  type={field === "email" ? "email" : "text"}
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleInputChange}
-                  className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
-                />
-              </div>
-            ))}
-            <button
-              type="submit"
-              className="w-full bg-[#06AED5] text-white py-2 rounded-lg font-semibold hover:bg-[#086788] transition"
-            >
-              Save Changes
-            </button>
-          </form>
-        </div>
-      );
-    }
-
-    if (activeTab === "changePassword") {
-      return (
-        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl">
-          <h2 className="text-xl font-bold mb-6 text-gray-800">Change Password</h2>
-          <form onSubmit={handleChangePassword} className="space-y-5">
-            {[
-              {
-                label: "Old Password",
-                name: "oldPassword",
-                visible: showOldPassword,
-                toggle: () => setShowOldPassword(!showOldPassword),
-              },
-              {
-                label: "New Password",
-                name: "newPassword",
-                visible: showNewPassword,
-                toggle: () => setShowNewPassword(!showNewPassword),
-              },
-              {
-                label: "Confirm Password",
-                name: "confirmPassword",
-                visible: showConfirmPassword,
-                toggle: () => setShowConfirmPassword(!showConfirmPassword),
-              },
-            ].map(({ label, name, visible, toggle }) => (
-              <div className="relative" key={name}>
-                <label className="block text-sm font-semibold mb-1 text-gray-700">{label}</label>
-                <input
-                  type={visible ? "text" : "password"}
-                  name={name}
-                  value={passwordData[name]}
-                  onChange={handlePasswordChange}
-                  className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
-                />
-                <button type="button" onClick={toggle} className="absolute right-3 top-9 text-gray-500">
-                  {visible ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            ))}
-
-            <button
-              type="submit"
-              className="w-full bg-[#F0C808] text-white py-2 rounded-lg font-semibold hover:bg-[#DD1C1A] transition"
-            >
-              Change Password
-            </button>
-          </form>
-        </div>
-      );
-    }
-
-    if (activeTab === "deleteAccount") {
-      return (
-        <div className="w-full xl:w-[500px] bg-white shadow-lg p-6 rounded-2xl">
-          <h2 className="text-xl font-bold text-red-600 mb-4">Delete Account</h2>
-          <p className="mb-4 text-gray-600">
-            You can temporarily deactivate your account or permanently delete it. Please choose carefully.
-          </p>
-          <div className="space-y-4">
-            <div className="relative">
-              <label className="block text-sm font-semibold mb-1 text-gray-700">Confirm Password</label>
-              <input
-                type={showDeletePassword ? "text" : "password"}
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                className="w-full border border-gray-300 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06AED5]"
-                placeholder="Enter your password to confirm"
-              />
-              <button
-                type="button"
-                onClick={() => setShowDeletePassword(!showDeletePassword)}
-                className="absolute right-3 top-9 text-gray-500"
-              >
-                {showDeletePassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-
-            <button
-              onClick={handleTemporaryDelete}
-              className="w-full bg-yellow-500 text-white py-2 rounded-lg hover:bg-yellow-600 transition"
-            >
-              Temporarily Delete Account
-            </button>
-            <button
-              onClick={handlePermanentDelete}
-              className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
-            >
-              Permanently Delete Account
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return null;
+  const styles = {
+    container: {
+      height: "100vh",
+      width: "100%",
+      background: "linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#fff",
+    },
+    formWrapper: {
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(16px)",
+      borderRadius: "18px",
+      padding: "2.5rem 2.5rem",
+      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+      maxWidth: "480px",
+      width: "100%",
+      animation: "fadeIn 0.9s ease-out",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    heading: {
+      marginBottom: "24px",
+      fontSize: "30px",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "#FFF",
+    },
+    inputGroup: {
+      position: "relative",
+      margin: "16px 0",
+    },
+    icon: {
+      position: "absolute",
+      top: "50%",
+      left: "14px",
+      transform: "translateY(-50%)",
+      color: "#aaa",
+      fontSize: "14px",
+      pointerEvents: "none",
+    },
+    input: {
+      width: "100%",
+      padding: "13px 13px 13px 42px",
+      borderRadius: "10px",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.06)",
+      color: "#fff",
+      fontSize: "15px",
+      outline: "none",
+      transition: "0.3s ease",
+    },
+    button: {
+      width: "100%",
+      padding: "14px",
+      background: "linear-gradient(to right, #06beb6, #48b1bf)",
+      border: "none",
+      borderRadius: "10px",
+      color: "#fff",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      marginTop: "20px",
+      transition: "all 0.3s ease",
+    },
+    backLink: {
+      marginTop: "22px",
+      fontSize: "14px",
+      textAlign: "center",
+      color: "#ccc",
+    },
+    anchor: {
+      color: "#ffffff",
+      textDecoration: "underline",
+      fontWeight: 500,
+    },
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF1D0] p-6">
-      <div className="container mx-auto max-w-7xl">
-        <div className="grid md:grid-cols-[240px_1fr] gap-6">
-          <aside className="bg-white p-6 rounded-2xl shadow-lg space-y-2">
-            <h2 className="text-lg font-bold text-gray-800 mb-3">Account Settings</h2>
-            {[
-              { label: "My Dashboard", tab: "profileDetails" },
-              { label: "Change Password", tab: "changePassword" },
-              { label: "Delete Account", tab: "deleteAccount" },
-            ].map(({ label, tab }) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`w-full text-left px-4 py-2 rounded-lg font-medium transition ${
-                  activeTab === tab
-                    ? "bg-[#06AED5]/10 text-[#06AED5]"
-                    : "hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </aside>
+    <div style={styles.container}>
+      <style>
+        {`
+          input:focus {
+            border-color: #06beb6;
+            box-shadow: 0 0 0 2px rgba(6, 190, 182, 0.4);
+          }
 
-          <main className="min-h-[500px]">{renderMainContent()}</main>
-        </div>
+          button:hover {
+            background: linear-gradient(to right, #48b1bf, #06beb6);
+            transform: translateY(-1px);
+          }
+
+          
+           
+        `}
+      </style>
+
+      <div style={styles.formWrapper}>
+        <h2 style={styles.heading}>Welcome Back</h2>
+        <form onSubmit={handleSubmit}>
+          <div style={styles.inputGroup}>
+            <i className="fas fa-envelope" style={styles.icon}></i>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email address"
+              required
+              autoComplete="email"
+              style={styles.input}
+            />
+          </div>
+          <div style={styles.inputGroup}>
+            <i className="fas fa-lock" style={styles.icon}></i>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+              autoComplete="current-password"
+              style={styles.input}
+            />
+          </div>
+          <button type="submit" style={styles.button}>Sign In</button>
+        </form>
+        <p style={styles.backLink}>
+          Don&apos;t have an account?{" "}
+          <a href="signup.html" style={styles.anchor}>Sign Up</a>
+        </p>
       </div>
     </div>
   );
 };
 
-export default EditProfile;
+export default SignIn;

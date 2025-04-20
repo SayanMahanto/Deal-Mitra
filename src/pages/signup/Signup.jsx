@@ -1,169 +1,172 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Client, Account, Databases, ID } from "appwrite";
 
-function Signup() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+const Signup = () => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    
+    password: "",
+    confirmPassword: "",
+  });
 
-  const envVars = {
-    VITE_APPWRITE_URL: import.meta.env.VITE_APPWRITE_URL,
-    VITE_APPWRITE_PROJECT_ID: import.meta.env.VITE_APPWRITE_PROJECT_ID,
-    VITE_APPWRITE_DATABASE_ID: import.meta.env.VITE_APPWRITE_DATABASE_ID,
-    VITE_APPWRITE_COLLECTION_ID: import.meta.env.VITE_APPWRITE_COLLECTION_ID,
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
-  let client = null;
-  if (envVars.VITE_APPWRITE_URL && envVars.VITE_APPWRITE_PROJECT_ID) {
-    client = new Client()
-      .setEndpoint(envVars.VITE_APPWRITE_URL)
-      .setProject(envVars.VITE_APPWRITE_PROJECT_ID);
-  } else {
-    console.error("Missing required environment variables:", envVars);
-  }
-
-  const databases = client ? new Databases(client) : null;
-  const account = client ? new Account(client) : null;
-
-  const handleSignin = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    navigate("/login");
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!client) {
-      setError("Appwrite client is not initialized. Check environment variables.");
+    const { name, email,  password, confirmPassword } = formData;
+
+    const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+    
+
+    if (!name || !email || !password || !confirmPassword) {
+      alert("Please fill in all fields.");
       return;
     }
+
+    if (!emailPattern.test(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    
+
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters.");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (!name.trim()) {
-      setError("Name is required");
+      alert("Passwords do not match.");
       return;
     }
 
-    setError("");
-    try {
-      await account.create(ID.unique(), email, password, name);
-      await databases.createDocument(
-        envVars.VITE_APPWRITE_DATABASE_ID,
-        envVars.VITE_APPWRITE_COLLECTION_ID,
-        ID.unique(),
-        {
-          email: email,
-          password: password,
-          name: name,
-        }
-      );
-      navigate("/login");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setName("");
-    } catch (err) {
-      setError(err.message || "An error occurred during signup");
-    }
+    alert(`🎉 Registered Successfully!\n\nWelcome, ${name}!`);
+    setFormData({
+      name: "",
+      email: "",
+     
+      password: "",
+      confirmPassword: "",
+    });
+  };
+
+  const styles = {
+    container: {
+      height: "100vh",
+      width: "100%",
+      background: `linear-gradient(to bottom right, #0f2027, #203a43, #2c5364)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#fff",
+    },
+    formWrapper: {
+      background: "rgba(255, 255, 255, 0.1)",
+      backdropFilter: "blur(16px)",
+      borderRadius: "18px",
+      padding: "2.5rem 2.5rem",
+      boxShadow: "0 12px 40px rgba(0, 0, 0, 0.4)",
+      maxWidth: "480px",
+      width: "100%",
+      animation: "fadeIn 0.9s ease-out",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+    },
+    heading: {
+      marginBottom: "24px",
+      fontSize: "30px",
+      fontWeight: "bold",
+      textAlign: "center",
+      color: "#FFF",
+    },
+    inputGroup: {
+      position: "relative",
+      margin: "16px 0",
+    },
+    icon: {
+      position: "absolute",
+      top: "50%",
+      left: "14px",
+      transform: "translateY(-50%)",
+      color: "#aaa",
+      fontSize: "14px",
+      pointerEvents: "none",
+    },
+    input: {
+      width: "100%",
+      padding: "13px 13px 13px 42px",
+      borderRadius: "10px",
+      border: "1px solid rgba(255, 255, 255, 0.2)",
+      backgroundColor: "rgba(255, 255, 255, 0.06)",
+      color: "#fff",
+      fontSize: "15px",
+      outline: "none",
+      transition: "0.3s ease",
+    },
+    button: {
+      width: "100%",
+      padding: "14px",
+      background: "linear-gradient(to right, #06beb6, #48b1bf)",
+      border: "none",
+      borderRadius: "10px",
+      color: "#fff",
+      fontSize: "16px",
+      fontWeight: "600",
+      cursor: "pointer",
+      marginTop: "20px",
+      transition: "all 0.3s ease",
+    },
+    backLink: {
+      marginTop: "22px",
+      fontSize: "14px",
+      textAlign: "center",
+      color: "#ccc",
+    },
+    anchor: {
+      color: "#ffffff",
+      textDecoration: "underline",
+      fontWeight: 500,
+    },
   };
 
   return (
-    <div className="min-h-screen grid grid-cols-1 md:grid-cols-2 bg-gradient-to-br from-[#fef9ec] via-[#edfce4] to-[#d0f4c5]">
-      <div className="flex flex-col justify-center px-10 py-12">
-        <div className="max-w-md w-full mx-auto">
-          <h1 className="text-4xl font-extrabold text-[#3e3e3e] mb-4">DEAL MITRA</h1>
-          <h2 className="text-2xl font-semibold text-[#556b2f] mb-2">Create your account</h2>
-          <p className="text-sm text-[#6b705c] mb-6">Start your journey with us</p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-[#4d4d4d]">
-                Full name
-              </label>
+    <div style={styles.container}>
+      <div style={styles.formWrapper}>
+        <h2 style={styles.heading}><i className="fas fa-store"></i> Create Your Account</h2>
+        <form onSubmit={handleSubmit}>
+          {[
+            { icon: "fas fa-user", id: "name", type: "text", placeholder: "Full Name" },
+            { icon: "fas fa-envelope", id: "email", type: "email", placeholder: "Email Address" },
+            
+            { icon: "fas fa-lock", id: "password", type: "password", placeholder: "Password" },
+            { icon: "fas fa-lock", id: "confirmPassword", type: "password", placeholder: "Confirm Password" },
+          ].map(({ icon, id, type, placeholder }) => (
+            <div className="input-group" style={styles.inputGroup} key={id}>
+              <i className={icon} style={styles.icon}></i>
               <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
-                placeholder="John Doe"
+                id={id}
+                type={type}
+                placeholder={placeholder}
+                value={formData[id]}
+                onChange={handleChange}
+                style={styles.input}
                 required
               />
             </div>
+          ))}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-[#4d4d4d]">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-[#4d4d4d]">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
-                required
-              />
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-[#4d4d4d]">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-[#c4b998] bg-[#fff9e6] px-3 py-2 shadow focus:border-[#a3d977] focus:ring-[#a3d977]"
-                required
-              />
-            </div>
-
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-[#fcd34d] to-[#8bc34a] text-white py-2 rounded-lg font-semibold hover:from-[#fde68a] hover:to-[#9ccc65] shadow-md"
-            >
-              Sign Up
-            </button>
-          </form>
-
-          <p className="text-sm text-center text-[#6b705c] mt-6">
-            Already have an account?{' '}
-            <span
-              className="text-[#5b8c42] hover:underline cursor-pointer"
-              onClick={handleSignin}
-            >
-              Sign in
-            </span>
-          </p>
-        </div>
+          <button type="submit" style={styles.button}>Register</button>
+        </form>
+        <p style={styles.backLink}>
+          Already registered? <a href="index.html" style={styles.anchor}>Sign In</a>
+        </p>
       </div>
-
-      <div className="hidden md:block bg-gradient-to-br from-[#fef9ec] via-[#dff7e1] to-[#bce7b1]" />
     </div>
   );
-}
+};
 
 export default Signup;
