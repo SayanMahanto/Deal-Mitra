@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Client, Account } from "appwrite";
+import express from "express";
 import cors from "cors";
+
+const app = express();
 
 app.use(cors());
 
