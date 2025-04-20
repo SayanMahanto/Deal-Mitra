@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const SearchPagev3 = () => {
   const [search, setSearch] = useState("");
@@ -7,6 +9,9 @@ const SearchPagev3 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [sortBy, setSortBy] = useState("none");
   const [filterSource, setFilterSource] = useState("both");
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000000 });
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
@@ -102,18 +107,10 @@ const SearchPagev3 = () => {
       if (instamartResponse.error) {
         errorMessages.push(instamartResponse.error);
       } else {
-        instamartProducts = instamartResponse.slice(0, 5).map(
-          (product) => (
-            (product.product_url = `https://www.swiggy.com/instamart/search?custom_back=true&query=${search.replace(
-              / /g,
-              "+"
-            )}`),
-            {
-              ...product,
-              source: "instamart",
-            }
-          )
-        );
+        instamartProducts = instamartResponse.slice(0, 5).map((product) => ({
+          ...product,
+          source: "instamart",
+        }));
       }
 
       let bigbasketProducts = [];
@@ -162,6 +159,11 @@ const SearchPagev3 = () => {
     }
   };
 
+  const handleDashboard = (e) => {
+    e.preventDefault();
+    navigate("/dashboard");
+  };
+
   const sortProducts = (products) => {
     if (sortBy === "price-low-high") {
       return [...products].sort((a, b) => a.price - b.price);
@@ -174,28 +176,45 @@ const SearchPagev3 = () => {
   };
 
   const filterProducts = (products) => {
-    if (filterSource === "amazon") {
-      return products.filter((product) => product.source === "amazon");
-    } else if (filterSource === "flipkart") {
-      return products.filter((product) => product.source === "flipkart");
-    } else if (filterSource === "zepto") {
-      return products.filter((product) => product.source === "zepto");
-    } else if (filterSource === "instamart") {
-      return products.filter((product) => product.source === "instamart");
-    } else if (filterSource === "bigbasket") {
-      return products.filter((product) => product.source === "bigbasket");
-    }
-    return products;
+    return products.filter((product) => {
+      const withinPriceRange =
+        product.price >= priceRange.min && product.price <= priceRange.max;
+      const matchesSource =
+        filterSource === "both" || product.source === filterSource;
+      const matchesRating =
+        ratingFilter === "all" ||
+        (ratingFilter === "3" && product.rating >= 3) ||
+        (ratingFilter === "4" && product.rating >= 4) ||
+        (ratingFilter === "5" && product.rating >= 5);
+
+      return withinPriceRange && matchesSource && matchesRating;
+    });
+  };
+
+  const handlePriceChange = (e) => {
+    const value = parseInt(e.target.value);
+    setPriceRange((prev) => ({
+      ...prev,
+      [e.target.name === "min" ? "min" : "max"]: value,
+    }));
   };
 
   const displayedProducts = sortProducts(filterProducts(products));
 
   return (
     <div className="h-screen w-screen bg-gray-100 flex flex-col">
-      <div className="flex-grow bg-white p-4 rounded-lg shadow-lg overflow-auto">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+      {/* Header with User Icon on the Left */}
+      <div className="flex items-center justify-between p-4 bg-white shadow-md">
+        <h1 className="absolute left-1/2 transform -translate-x-1/2 text-2xl font-bold text-gray-800">
           SEARCH PAGE
         </h1>
+        <FaUserCircle
+          className="ml-auto text-3xl text-gray-700 cursor-pointer mr-2"
+          onClick={handleDashboard}
+        />
+      </div>
+
+      <div className="flex-grow p-4 overflow-auto">
         {error && (
           <p className="text-red-500 text-xs mb-4 text-center">{error}</p>
         )}
@@ -204,40 +223,61 @@ const SearchPagev3 = () => {
           <div className="w-full md:w-1/4 bg-orange-100 p-4 rounded-lg h-full overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">FILTER</h3>
             <div className="space-y-4">
+              {/* Price Filter */}
               <div>
                 <label className="block text-sm font-medium text-gray-700">
-                  Price
+                  Price Range (₹)
                 </label>
-                <input type="range" className="w-full" min="0" max="10000" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Categories
-                </label>
-                <select className="w-full px-3 py-2 border rounded-lg">
-                  <option>Category 1</option>
-                  <option>Category 2</option>
-                  <option>Category 3</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Show more categories
-                </label>
-                <button className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600">
-                  Show more
-                </button>
-                <div className="mt-2 space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Category V
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Category V
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" /> Category V
-                  </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="number"
+                    name="min"
+                    value={priceRange.min}
+                    onChange={handlePriceChange}
+                    min="0"
+                    max={priceRange.max}
+                    className="w-1/2 px-2 py-1 border rounded"
+                  />
+                  <input
+                    type="number"
+                    name="max"
+                    value={priceRange.max}
+                    onChange={handlePriceChange}
+                    min={priceRange.min}
+                    max="1000000"
+                    className="w-1/2 px-2 py-1 border rounded"
+                  />
                 </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1000000"
+                  value={priceRange.max}
+                  onChange={(e) =>
+                    setPriceRange((prev) => ({
+                      ...prev,
+                      max: parseInt(e.target.value),
+                    }))
+                  }
+                  className="w-full mt-2"
+                />
+              </div>
+
+              {/* Rating Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Rating
+                </label>
+                <select
+                  value={ratingFilter}
+                  onChange={(e) => setRatingFilter(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="all">All</option>
+                  <option value="3">3 Stars and Above</option>
+                  <option value="4">4 Stars and Above</option>
+                  <option value="5">5 Stars</option>
+                </select>
               </div>
             </div>
           </div>
@@ -252,7 +292,7 @@ const SearchPagev3 = () => {
                 className="w-full md:w-2/3 px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter search term (e.g., Samsung Galaxy F14 5G)"
               />
-              <div className="mt-2 md:mt-0 md:ml-4 flex space-x-4">
+              <div className="mt-2 md:mt-0 md:ml-4 flex space-x-20">
                 <button
                   onClick={handleScrape}
                   disabled={isLoading || !search.trim()}
@@ -270,18 +310,6 @@ const SearchPagev3 = () => {
                   <option value="price-high-low">Price: High to Low</option>
                   <option value="rating-high-low">Rating: High to Low</option>
                 </select>
-                <select
-                  value={filterSource}
-                  onChange={(e) => setFilterSource(e.target.value)}
-                  className="px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="both">Source: Both</option>
-                  <option value="amazon">Source: Amazon</option>
-                  <option value="flipkart">Source: Flipkart</option>
-                  <option value="zepto">Source: Zepto</option>
-                  <option value="instamart">Source: Instamart</option>
-                  <option value="bigbasket">Source: BigBasket</option>
-                </select>
               </div>
             </div>
 
@@ -291,7 +319,7 @@ const SearchPagev3 = () => {
                 {displayedProducts.map((product, index) => (
                   <div
                     key={index}
-                    className="border p-4 rounded-lg shadow-sm bg-white"
+                    className="border p-4 rounded-lg shadow-sm bg-white cursor-pointer"
                     onClick={() => handleProductClick(product.product_url)}
                   >
                     <img
@@ -316,6 +344,11 @@ const SearchPagev3 = () => {
                       Source:{" "}
                       {product.source.charAt(0).toUpperCase() +
                         product.source.slice(1)}
+                    </p>
+                    <p className="text-blue-500 text-sm mt-2 underline">
+                      {product.product_url !== "N/A"
+                        ? "View Product"
+                        : "No link available"}
                     </p>
                   </div>
                 ))}

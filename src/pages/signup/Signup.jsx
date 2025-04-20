@@ -10,6 +10,9 @@ function Signup() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const avatarSeed = Math.random().toString(36).substring(7); // Unique seed
+  const userId = ID.unique(); // Unique user ID
+
   const envVars = {
     VITE_APPWRITE_URL: import.meta.env.VITE_APPWRITE_URL,
     VITE_APPWRITE_PROJECT_ID: import.meta.env.VITE_APPWRITE_PROJECT_ID,
