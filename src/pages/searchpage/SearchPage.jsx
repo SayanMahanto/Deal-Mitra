@@ -44,7 +44,6 @@ export default function SearchPage() {
 
   // URLs for Amazon and Flipkart
   const amazonUrl = `https://www.amazon.in/s?k=${search.replace(/ /g, "+")}`;
-  const blinkitUrl = `https://blinkit.com/s/?q=${search.replace(/ /g, "%20")}`;
   const flipkartUrl = `https://www.flipkart.com/search?q=${search.replace(
     / /g,
     "+"
@@ -83,35 +82,26 @@ export default function SearchPage() {
     let errorMessages = [];
 
     try {
-      const [amazonResponse, flipkartResponse, blinkitResponse] =
-        await Promise.all([
-          fetch(
-            `http://localhost:3001/scrape-amazon?search=${search.replace(
-              / /g,
-              "+"
-            )}`
-          )
-            .then((res) => res.json())
-            .catch((e) => ({ error: `Amazon scraping failed: ${e.message}` })),
-          fetch(
-            `http://localhost:3001/scrape-flipkart?search=${search.replace(
-              / /g,
-              "+"
-            )}`
-          )
-            .then((res) => res.json())
-            .catch((e) => ({
-              error: `Flipkart scraping failed: ${e.message}`,
-            })),
-          fetch(
-            `http://localhost:3001/scrape-blinkit?search=${search.replace(
-              / /g,
-              "%20"
-            )}`
-          )
-            .then((res) => res.json())
-            .catch((e) => ({ error: `Blinkit scraping failed: ${e.message}` })),
-        ]);
+      const [amazonResponse, flipkartResponse] = await Promise.all([
+        fetch(
+          `http://localhost:3001/scrape-amazon?search=${search.replace(
+            / /g,
+            "+"
+          )}`
+        )
+          .then((res) => res.json())
+          .catch((e) => ({ error: `Amazon scraping failed: ${e.message}` })),
+        fetch(
+          `http://localhost:3001/scrape-flipkart?search=${search.replace(
+            / /g,
+            "+"
+          )}`
+        )
+          .then((res) => res.json())
+          .catch((e) => ({
+            error: `Flipkart scraping failed: ${e.message}`,
+          })),
+      ]);
 
       let amazonProducts = [];
       if (amazonResponse.error) {
@@ -147,28 +137,7 @@ export default function SearchPage() {
         }));
       }
 
-      let blinkitProducts = [];
-      if (blinkitResponse.error) {
-        errorMessages.push(blinkitResponse.error);
-      } else {
-        blinkitProducts = blinkitResponse.map((product, index) => ({
-          id: `blinkit-${index}`,
-          name: product.name,
-          price: `₹${product.price.toLocaleString()}`,
-          rating: parseFloat(product.rating) || 0,
-          image: product.image_url,
-          reviews: product.reviews,
-          source: "blinkit",
-          category: inferCategory(product.name), // Optional: infer category
-          color: inferColor(product.name), // Optional: infer color
-        }));
-      }
-
-      const combinedProducts = [
-        ...amazonProducts,
-        ...flipkartProducts,
-        ...blinkitProducts,
-      ];
+      const combinedProducts = [...amazonProducts, ...flipkartProducts];
       setProducts(combinedProducts);
 
       if (combinedProducts.length > 0) {
