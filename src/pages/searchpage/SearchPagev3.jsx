@@ -150,6 +150,13 @@ const SearchPagev3 = () => {
     setProducts([]); // Clear suggested products when searching
     let errorMessages = [];
 
+    const baseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3001"
+        : "https://deal-mitra.onrender.com";
+
+    const query = search.replace(/ /g, "+");
+
     try {
       const [
         amazonResponse,
@@ -158,105 +165,46 @@ const SearchPagev3 = () => {
         instamartResponse,
         bigbasketResponse,
       ] = await Promise.all([
-        fetch(
-          `http://localhost:3001/scrape-amazon?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
+        fetch(`${baseUrl}/scrape-amazon?search=${query}`)
           .then((res) => res.json())
           .catch((e) => ({ error: `Amazon scraping failed: ${e.message}` })),
-        fetch(
-          `http://localhost:3001/scrape-flipkart?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
+
+        fetch(`${baseUrl}/scrape-flipkart?search=${query}`)
           .then((res) => res.json())
           .catch((e) => ({ error: `Flipkart scraping failed: ${e.message}` })),
-        fetch(
-          `http://localhost:3001/scrape-zepto?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
+
+        fetch(`${baseUrl}/scrape-zepto?search=${query}`)
           .then((res) => res.json())
           .catch((e) => ({ error: `Zepto scraping failed: ${e.message}` })),
-        fetch(
-          `http://localhost:3001/scrape-instamart?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
+
+        fetch(`${baseUrl}/scrape-instamart?search=${query}`)
           .then((res) => res.json())
           .catch((e) => ({ error: `Instamart scraping failed: ${e.message}` })),
-        fetch(
-          `http://localhost:3001/scrape-bigbasket?search=${search.replace(
-            / /g,
-            "+"
-          )}`
-        )
+
+        fetch(`${baseUrl}/scrape-bigbasket?search=${query}`)
           .then((res) => res.json())
           .catch((e) => ({ error: `BigBasket scraping failed: ${e.message}` })),
       ]);
 
-      let amazonProducts = [];
-      if (amazonResponse.error) {
-        errorMessages.push(amazonResponse.error);
-      } else {
-        amazonProducts = amazonResponse.slice(0, 5).map((product) => ({
+      const parseProducts = (response, source) => {
+        if (response.error) {
+          errorMessages.push(response.error);
+          return [];
+        }
+        return response.slice(0, 5).map((product) => ({
           ...product,
-          source: "amazon",
+          source,
         }));
-      }
-
-      let flipkartProducts = [];
-      if (flipkartResponse.error) {
-        errorMessages.push(flipkartResponse.error);
-      } else {
-        flipkartProducts = flipkartResponse.slice(0, 5).map((product) => ({
-          ...product,
-          source: "flipkart",
-        }));
-      }
-
-      let zeptoProducts = [];
-      if (zeptoResponse.error) {
-        errorMessages.push(zeptoResponse.error);
-      } else {
-        zeptoProducts = zeptoResponse.slice(0, 5).map((product) => ({
-          ...product,
-          source: "zepto",
-        }));
-      }
-
-      let instamartProducts = [];
-      if (instamartResponse.error) {
-        errorMessages.push(instamartResponse.error);
-      } else {
-        instamartProducts = instamartResponse.slice(0, 5).map((product) => ({
-          ...product,
-          source: "instamart",
-        }));
-      }
-
-      let bigbasketProducts = [];
-      if (bigbasketResponse.error) {
-        errorMessages.push(bigbasketResponse.error);
-      } else {
-        bigbasketProducts = bigbasketResponse.slice(0, 5).map((product) => ({
-          ...product,
-          source: "bigbasket",
-        }));
-      }
+      };
 
       const combinedProducts = [
-        ...amazonProducts,
-        ...flipkartProducts,
-        ...zeptoProducts,
-        ...instamartProducts,
-        ...bigbasketProducts,
+        ...parseProducts(amazonResponse, "amazon"),
+        ...parseProducts(flipkartResponse, "flipkart"),
+        ...parseProducts(zeptoResponse, "zepto"),
+        ...parseProducts(instamartResponse, "instamart"),
+        ...parseProducts(bigbasketResponse, "bigbasket"),
       ];
+
       setProducts(combinedProducts);
 
       if (combinedProducts.length > 0) {
@@ -264,7 +212,7 @@ const SearchPagev3 = () => {
       } else if (errorMessages.length > 0) {
         setError(errorMessages.join(" | "));
       } else {
-        setError("No products found from either platform.");
+        setError("No products found from any platform.");
       }
 
       setTimeout(() => setError(""), 3000);
